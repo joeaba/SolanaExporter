@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/certusone/solana_exporter/pkg/rpc"
+	"github.com/joeaba/SolanaExporter/pkg/rpc"
 	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/klog/v2"
 )

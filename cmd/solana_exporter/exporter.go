@@ -1,11 +1,11 @@
 package main
 
 import (
-	"collectors"
 	"flag"
 	"net/http"
 	"time"
 
+	"github.com/joeaba/SolanaExporter/pkg/collectors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
