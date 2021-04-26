@@ -33,7 +33,7 @@ SolanaExporter has a package named 'rpc' which does the task of invoking differe
 - **getTokenSupply**          https://docs.solana.com/developing/clients/jsonrpc-api#gettokensupply
 - **getAccountInfo**          https://docs.solana.com/developing/clients/jsonrpc-api#getaccountinfo
 
-The RPC API running on the node gives back the response data about Solana application in JSON format. In SolanaExporter, 'collectors' package and slots.go unmarshals the JSON response into Prometheus format. The data in Prometheus format is exposed by SolanaExporter on port 8080 and /metrics path. You can the Metrics section to know more about the metrics that are exposed by SolanaExporter.
+The RPC API running on the node gives back the response data about Solana application in JSON format. In SolanaExporter, 'collectors' package and slots.go unmarshals the JSON response into Prometheus format. The data in Prometheus format is exposed by SolanaExporter on port 8080 and /metrics path. You can check the Metrics section to know more about the metrics that are exposed by SolanaExporter.
 
 ## Metrics
 
@@ -102,13 +102,13 @@ Metrics tracked with `account_balance_pubkey`:
 - **solana_validator_activated_stake**  - Active stake for each validator. 
 - **solana_active_validators** - Total number of active/delinquent validators.
 
-For each of the api requests we introduced different .go files each of having a function, which are called from exporter.go & slots.go(which are the part of main file).
+For each of the api requests we introduced different .go files each of them having a function, which are called from exporter.go & slots.go.
 
 # We are converting the JSON response to prometheous in two ways
 1. exporter.go 
-This file is having different collect functions which will be called internally. Each of the Collect functions is getting the response and send the body to the "must**Metric" function which is having a channel making unnderstandable to prometheus. All the collectors have to register to prometheus.  
+This file is having different collect functions which get called internally. Each of the Collect functions is getting the response and send the body to the "must_Metric" function which is having a channel to prometheus format. All the collectors have to be registered to prometheus.  
 2. slots.go
-This file is containing the different metrics. All the metrics have to register in prometheus. Many of the api methods are called within this file and setting the data in prometheus format. We are not using channels as in exporter.go.
+This file is containing the different metrics. All the metrics have to be register in prometheus. Many of the api methods are called within this file and set the data in prometheus format. We are not using channels as in exporter.go.
 
 # Commands to start the project
 1. go run exporter.go slots.go -rpcURI=http://<ip-address> -v=2 (From this command we can see all the api responses in JSON Format).
