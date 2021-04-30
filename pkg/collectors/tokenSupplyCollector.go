@@ -41,7 +41,7 @@ func NewTokenSupplyCollector(rpcAddr string) *TokenSupplyCollector {
 			"Number of base 10 digits to the right of the decimal place",
 			[]string{"pubkey"}, nil),
 		supplyAmountString: prometheus.NewDesc(
-			"solana_token_suuply_amount_string",
+			"solana_token_supply_amount_string",
 			"The total token supply as a string, using mint-prescribed decimals",
 			[]string{"amount", "pubkey"}, nil),
 	}

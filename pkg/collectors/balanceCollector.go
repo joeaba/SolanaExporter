@@ -2,11 +2,9 @@ package collectors
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/joeaba/SolanaExporter/pkg/rpc"
 	"github.com/prometheus/client_golang/prometheus"
-	"k8s.io/klog/v2"
 )
 
 // AccountBalancePubkey struct which contains a
@@ -47,7 +45,7 @@ func (c *BalanceCollector) mustEmitBalanceMetrics(ch chan<- prometheus.Metric, r
 
 func (c *BalanceCollector) Collect(ch chan<- prometheus.Metric) {
 
-	jsonData, err := GetKeys()
+	/*jsonData, err := GetKeys()
 	if err != nil {
 		klog.V(2).Infof("balance response: %v", err)
 	}
@@ -57,18 +55,24 @@ func (c *BalanceCollector) Collect(ch chan<- prometheus.Metric) {
 	// jsonFile's content into type which we defined above
 	if err = json.Unmarshal(jsonData, &keys); err != nil {
 		klog.V(2).Infof("failed to decode response body: %w", err)
-	}
+	}*/
 
-	for _, pubkey := range keys.Pubkey {
+	ctx, cancel := context.WithTimeout(context.Background(), HttpTimeout)
+	defer cancel()
+
+	response, _ := c.RpcClient.GetVoteAccounts(ctx, rpc.CommitmentRecent)
+
+	for _, account := range append(response.Result.Current, response.Result.Delinquent...) {
+
 		ctx, cancel := context.WithTimeout(context.Background(), HttpTimeout)
 		defer cancel()
 
-		balance, err := c.RpcClient.GetBalance(ctx, pubkey)
+		balance, err := c.RpcClient.GetBalance(ctx, account.VotePubkey)
 		if err != nil {
-			ch <- prometheus.MustNewConstMetric(c.contextSlot, prometheus.GaugeValue, float64(-1), pubkey)
-			ch <- prometheus.MustNewConstMetric(c.accountBalance, prometheus.GaugeValue, float64(-1), pubkey)
+			ch <- prometheus.MustNewConstMetric(c.contextSlot, prometheus.GaugeValue, float64(-1), account.VotePubkey)
+			ch <- prometheus.MustNewConstMetric(c.accountBalance, prometheus.GaugeValue, float64(-1), account.VotePubkey)
 		} else {
-			c.mustEmitBalanceMetrics(ch, balance, pubkey)
+			c.mustEmitBalanceMetrics(ch, balance, account.VotePubkey)
 		}
 	}
 }

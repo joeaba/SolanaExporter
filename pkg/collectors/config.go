@@ -12,7 +12,7 @@ const (
 )
 
 func GetKeys() ([]byte, error) {
-	jsonFile, err := os.Open("path to config.local.json")
+	jsonFile, err := os.Open("//Users/anmolrajarora/Downloads/Solana_Home/solana_exporter/config.local.json")
 	if err != nil {
 		return nil, fmt.Errorf("RPC call failed: %w", err)
 	}

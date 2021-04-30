@@ -43,7 +43,7 @@ func main() {
 	CollectVersion := collectors.NewVersionCollector(*rpcAddr)
 	CollectEpochSchedule := collectors.NewEpochScheduleCollector(*rpcAddr)
 	CollectTokenSupply := collectors.NewTokenSupplyCollector(*rpcAddr)
-	CollectAccountInfo := collectors.NewAccountInfoCollector(*rpcAddr)
+	// CollectAccountInfo := collectors.NewAccountInfoCollector(*rpcAddr)
 	CollectBalance := collectors.NewBalanceCollector(*rpcAddr)
 	CollectRecentBlockhash := collectors.NewRecentBlockhashCollector(*rpcAddr)
 
@@ -60,7 +60,7 @@ func main() {
 	prometheus.MustRegister(CollectVersion)
 	prometheus.MustRegister(CollectEpochSchedule)
 	prometheus.MustRegister(CollectTokenSupply)
-	prometheus.MustRegister(CollectAccountInfo)
+	// prometheus.MustRegister(CollectAccountInfo)
 	prometheus.MustRegister(CollectBalance)
 	prometheus.MustRegister(CollectRecentBlockhash)
 
