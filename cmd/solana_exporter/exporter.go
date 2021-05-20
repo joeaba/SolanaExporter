@@ -46,6 +46,7 @@ func main() {
 	// CollectAccountInfo := collectors.NewAccountInfoCollector(*rpcAddr)
 	CollectBalance := collectors.NewBalanceCollector(*rpcAddr)
 	CollectRecentBlockhash := collectors.NewRecentBlockhashCollector(*rpcAddr)
+	CollectCurrentSlot := collectors.NewCurrentSlotCollector(*rpcAddr)
 
 	go WatchSlots(Collector)
 
@@ -63,6 +64,7 @@ func main() {
 	// prometheus.MustRegister(CollectAccountInfo)
 	prometheus.MustRegister(CollectBalance)
 	prometheus.MustRegister(CollectRecentBlockhash)
+	prometheus.MustRegister(CollectCurrentSlot)
 
 	http.Handle("/metrics", promhttp.Handler())
 

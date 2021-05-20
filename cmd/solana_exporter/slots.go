@@ -59,10 +59,10 @@ func WatchSlots(c *collectors.SolanaCollector) {
 		}
 
 		// Returns the current slot the node is processing
-		slot, err := c.RpcClient.GetSlot(ctx)
-		if err != nil {
-			klog.Infof("failed to fetch slot, retrying: %v", err)
-		}
+		// slot, err := c.RpcClient.GetSlot(ctx)
+		// if err != nil {
+		// 	klog.Infof("failed to fetch slot, retrying: %v", err)
+		// }
 
 		leader, err := c.RpcClient.GetSlotLeader(ctx)
 		if err != nil {
@@ -81,7 +81,7 @@ func WatchSlots(c *collectors.SolanaCollector) {
 
 		firstAvailableBlock.Set(float64(block))
 		maxRetransmitSlot.Set(float64(maxSlot))
-		currentSlot.Set(float64(slot))
+		// currentSlot.Set(float64(slot))
 		slotLeader.With(prometheus.Labels{"leader": leader}).Add(0)
 		minimumLedgerSlot.Set(float64(minLedgerSlot))
 		transactionCount.Set(float64(count))

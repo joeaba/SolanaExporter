@@ -55,10 +55,10 @@ var maxRetransmitSlot = prometheus.NewGauge(prometheus.GaugeOpts{
 	Help: "The max slot seen from retransmit stage",
 })
 
-var currentSlot = prometheus.NewGauge(prometheus.GaugeOpts{
+/*var currentSlot = prometheus.NewGauge(prometheus.GaugeOpts{
 	Name: "solana_current_slot",
 	Help: "The current slot the node is processing",
-})
+})*/
 
 var slotLeader = prometheus.NewCounterVec(prometheus.CounterOpts{
 	Name: "solana_slot_leader",
@@ -85,7 +85,7 @@ func init() {
 
 	prometheus.MustRegister(firstAvailableBlock)
 	prometheus.MustRegister(maxRetransmitSlot)
-	prometheus.MustRegister(currentSlot)
+	// prometheus.MustRegister(currentSlot)
 	prometheus.MustRegister(slotLeader)
 	prometheus.MustRegister(minimumLedgerSlot)
 	prometheus.MustRegister(transactionCount)

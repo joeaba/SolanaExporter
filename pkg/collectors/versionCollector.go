@@ -23,15 +23,15 @@ func NewVersionCollector(rpcAddr string) *VersionCollector {
 		solanaVersion: prometheus.NewDesc(
 			"solana_core_version",
 			"Software version of solana-core",
-			[]string{"solana_core", "ip"}, nil),
+			[]string{"solana_core", "ip", "nodename"}, nil),
 	}
 }
 
 func (c *VersionCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
-func (c *VersionCollector) mustEmitVersionMetrics(ch chan<- prometheus.Metric, version string, IP string) {
-	ch <- prometheus.MustNewConstMetric(c.solanaVersion, prometheus.GaugeValue, 0, version, IP)
+func (c *VersionCollector) mustEmitVersionMetrics(ch chan<- prometheus.Metric, version string, IP string, Nodename string) {
+	ch <- prometheus.MustNewConstMetric(c.solanaVersion, prometheus.GaugeValue, 0, version, IP, Nodename)
 }
 
 func (c *VersionCollector) Collect(ch chan<- prometheus.Metric) {
@@ -41,19 +41,22 @@ func (c *VersionCollector) Collect(ch chan<- prometheus.Metric) {
 		klog.V(2).Infof("version response: %v", err)
 	}
 
-	var IPs NodeIP
+	var nodes NodeIP
 	// we unmarshal our jsonData which contains our
 	// jsonFile's content into type which we defined above
-	if err = json.Unmarshal(jsonData, &IPs); err != nil {
+	if err = json.Unmarshal(jsonData, &nodes); err != nil {
 		klog.V(2).Infof("failed to decode response body: %w", err)
 	}
 
-	for _, IP := range IPs.IP {
+	for _, NodeInfo := range nodes.NodeInfo {
+
+		IP := NodeInfo.IP
+		Nodename := NodeInfo.Nodename
 
 		match, err := regexp.MatchString(`^[^a-z]`, IP)
 
 		if err != nil {
-			c.mustEmitVersionMetrics(ch, err.Error(), IP)
+			c.mustEmitVersionMetrics(ch, err.Error(), IP, Nodename)
 		}
 
 		IP = "http://" + IP
@@ -67,9 +70,9 @@ func (c *VersionCollector) Collect(ch chan<- prometheus.Metric) {
 
 		version, err := c.RpcClient.GetVersion(ctx, IP)
 		if err != nil {
-			c.mustEmitVersionMetrics(ch, err.Error(), IP)
+			c.mustEmitVersionMetrics(ch, err.Error(), IP, Nodename)
 		} else {
-			c.mustEmitVersionMetrics(ch, *version, IP)
+			c.mustEmitVersionMetrics(ch, *version, IP, Nodename)
 		}
 	}
 }

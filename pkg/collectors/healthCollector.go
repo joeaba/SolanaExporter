@@ -12,9 +12,12 @@ import (
 )
 
 // NodeIP struct which contains a
-// list of Node IPs
+// list of Node Names and IPs
 type NodeIP struct {
-	IP []string `json:"node_ip"`
+	NodeInfo []struct {
+		Nodename string `json:"nodename"`
+		IP       string `json:"ip"`
+	} `json:"node_ip"`
 }
 
 type HealthCollector struct {
@@ -30,15 +33,15 @@ func NewHealthCollector(rpcAddr string) *HealthCollector {
 		nodeHealth: prometheus.NewDesc(
 			"solana_node_health",
 			"The current health of the node",
-			[]string{"status", "ip"}, nil),
+			[]string{"status", "ip", "nodename"}, nil),
 	}
 }
 
 func (c *HealthCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
-func (c *HealthCollector) mustEmitHealthMetrics(ch chan<- prometheus.Metric, status string, IP string) {
-	ch <- prometheus.MustNewConstMetric(c.nodeHealth, prometheus.GaugeValue, 0, status, IP)
+func (c *HealthCollector) mustEmitHealthMetrics(ch chan<- prometheus.Metric, status string, IP string, Nodename string) {
+	ch <- prometheus.MustNewConstMetric(c.nodeHealth, prometheus.GaugeValue, 0, status, IP, Nodename)
 }
 
 func (c *HealthCollector) Collect(ch chan<- prometheus.Metric) {
@@ -48,19 +51,22 @@ func (c *HealthCollector) Collect(ch chan<- prometheus.Metric) {
 		klog.V(2).Infof("health response: %v", err)
 	}
 
-	var IPs NodeIP
+	var nodes NodeIP
 	// we unmarshal our jsonData which contains our
 	// jsonFile's content into type which we defined above
-	if err = json.Unmarshal(jsonData, &IPs); err != nil {
+	if err = json.Unmarshal(jsonData, &nodes); err != nil {
 		klog.V(2).Infof("failed to decode response body: %w", err)
 	}
 
-	for _, IP := range IPs.IP {
+	for _, NodeInfo := range nodes.NodeInfo {
+
+		IP := NodeInfo.IP
+		Nodename := NodeInfo.Nodename
 
 		match, err := regexp.MatchString(`^[^a-z]`, IP)
 
 		if err != nil {
-			c.mustEmitHealthMetrics(ch, err.Error(), IP)
+			c.mustEmitHealthMetrics(ch, err.Error(), IP, Nodename)
 		}
 
 		IP = "http://" + IP
@@ -75,12 +81,12 @@ func (c *HealthCollector) Collect(ch chan<- prometheus.Metric) {
 		status, err := c.RpcClient.GetHealth(ctx, IP)
 		if err != nil {
 			if strings.Contains(err.Error(), "deadline exceeded") {
-				c.mustEmitHealthMetrics(ch, "Node is unhealthy", IP)
+				c.mustEmitHealthMetrics(ch, "Node is unhealthy", IP, Nodename)
 			} else {
-				c.mustEmitHealthMetrics(ch, err.Error(), IP)
+				c.mustEmitHealthMetrics(ch, err.Error(), IP, Nodename)
 			}
 		} else {
-			c.mustEmitHealthMetrics(ch, status, IP)
+			c.mustEmitHealthMetrics(ch, status, IP, Nodename)
 		}
 	}
 }

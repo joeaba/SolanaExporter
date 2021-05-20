@@ -15,8 +15,8 @@ type GetSlotResponse struct {
 }
 
 // https://docs.solana.com/developing/clients/jsonrpc-api#getslot
-func (c *RPCClient) GetSlot(ctx context.Context) (int64, error) {
-	body, err := c.rpcRequest(ctx, formatRPCRequest("getSlot", []interface{}{}), c.rpcAddr)
+func (c *RPCClient) GetSlot(ctx context.Context, rpcAddr string) (int64, error) {
+	body, err := c.rpcRequest(ctx, formatRPCRequest("getSlot", []interface{}{}), rpcAddr)
 
 	if body == nil {
 		return -1, fmt.Errorf("RPC call failed: Body empty")
