@@ -1,0 +1,13 @@
+[Unit]
+Description=solana go application
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+User=user
+Group=user
+ExecStart=path to your executable
+
+[Install]
+WantedBy=multi-user.target

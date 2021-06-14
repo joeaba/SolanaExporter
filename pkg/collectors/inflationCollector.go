@@ -23,19 +23,19 @@ func NewInflationCollector(rpcAddr string) *InflationCollector {
 		totalInflation: prometheus.NewDesc(
 			"solana_total_inflation",
 			"Total inflation",
-			nil, nil),
+			[]string{"instance"}, nil),
 		validatorInflation: prometheus.NewDesc(
 			"solana_validator_inflation",
 			"Inflation allocated to validators",
-			nil, nil),
+			[]string{"instance"}, nil),
 		foundationInflation: prometheus.NewDesc(
 			"solana_foundation_inflation",
 			"Inflation allocated to the foundation",
-			nil, nil),
+			[]string{"instance"}, nil),
 		epochInflation: prometheus.NewDesc(
 			"solana_epoch_inflation",
 			"Epoch for which inflation values are valid",
-			nil, nil),
+			[]string{"instance"}, nil),
 	}
 }
 
@@ -43,10 +43,10 @@ func (c *InflationCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (c *InflationCollector) mustEmitInflationMetrics(ch chan<- prometheus.Metric, response *rpc.InflationInfo) {
-	ch <- prometheus.MustNewConstMetric(c.totalInflation, prometheus.GaugeValue, response.Total)
-	ch <- prometheus.MustNewConstMetric(c.validatorInflation, prometheus.GaugeValue, response.Validator)
-	ch <- prometheus.MustNewConstMetric(c.foundationInflation, prometheus.GaugeValue, response.Foundation)
-	ch <- prometheus.MustNewConstMetric(c.epochInflation, prometheus.GaugeValue, response.Epoch)
+	ch <- prometheus.MustNewConstMetric(c.totalInflation, prometheus.GaugeValue, response.Total, "mainnet")
+	ch <- prometheus.MustNewConstMetric(c.validatorInflation, prometheus.GaugeValue, response.Validator, "mainnet")
+	ch <- prometheus.MustNewConstMetric(c.foundationInflation, prometheus.GaugeValue, response.Foundation, "mainnet")
+	ch <- prometheus.MustNewConstMetric(c.epochInflation, prometheus.GaugeValue, response.Epoch, "mainnet")
 }
 
 func (c *InflationCollector) Collect(ch chan<- prometheus.Metric) {
@@ -55,10 +55,10 @@ func (c *InflationCollector) Collect(ch chan<- prometheus.Metric) {
 
 	info, err := c.RpcClient.GetInflationRate(ctx)
 	if err != nil {
-		ch <- prometheus.MustNewConstMetric(c.totalInflation, prometheus.GaugeValue, float64(-1))
-		ch <- prometheus.MustNewConstMetric(c.validatorInflation, prometheus.GaugeValue, float64(-1))
-		ch <- prometheus.MustNewConstMetric(c.foundationInflation, prometheus.GaugeValue, float64(-1))
-		ch <- prometheus.MustNewConstMetric(c.epochInflation, prometheus.GaugeValue, float64(-1))
+		ch <- prometheus.MustNewConstMetric(c.totalInflation, prometheus.GaugeValue, float64(-1), "mainnet")
+		ch <- prometheus.MustNewConstMetric(c.validatorInflation, prometheus.GaugeValue, float64(-1), "mainnet")
+		ch <- prometheus.MustNewConstMetric(c.foundationInflation, prometheus.GaugeValue, float64(-1), "mainnet")
+		ch <- prometheus.MustNewConstMetric(c.epochInflation, prometheus.GaugeValue, float64(-1), "mainnet")
 	} else {
 		c.mustEmitInflationMetrics(ch, info)
 	}

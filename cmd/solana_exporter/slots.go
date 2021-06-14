@@ -181,3 +181,4 @@ func fetchLeaderSlots(c *collectors.SolanaCollector, epochSlot int64) (map[int64
 
 	return slots, err
 }
+

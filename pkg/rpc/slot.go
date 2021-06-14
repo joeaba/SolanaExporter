@@ -39,3 +39,4 @@ func (c *RPCClient) GetSlot(ctx context.Context, rpcAddr string) (int64, error) 
 
 	return resp.Result, nil
 }
+

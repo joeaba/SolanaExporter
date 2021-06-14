@@ -27,11 +27,11 @@ func NewBalanceCollector(rpcAddr string) *BalanceCollector {
 		contextSlot: prometheus.NewDesc(
 			"solana_account_balance_context_slot",
 			"Account Balance Context Slot",
-			[]string{"pubkey"}, nil),
+			[]string{"pubkey", "instance"}, nil),
 		accountBalance: prometheus.NewDesc(
 			"solana_account_balance",
 			"The balance of the account of provided Pubkey",
-			[]string{"pubkey"}, nil),
+			[]string{"pubkey", "instance"}, nil),
 	}
 }
 
@@ -39,8 +39,8 @@ func (c *BalanceCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (c *BalanceCollector) mustEmitBalanceMetrics(ch chan<- prometheus.Metric, response *rpc.BalanceInfo, pubkey string) {
-	ch <- prometheus.MustNewConstMetric(c.contextSlot, prometheus.GaugeValue, float64(response.Context.Slot), pubkey)
-	ch <- prometheus.MustNewConstMetric(c.accountBalance, prometheus.GaugeValue, float64(response.Value), pubkey)
+	ch <- prometheus.MustNewConstMetric(c.contextSlot, prometheus.GaugeValue, float64(response.Context.Slot), pubkey, "mainnet")
+	ch <- prometheus.MustNewConstMetric(c.accountBalance, prometheus.GaugeValue, float64(response.Value), pubkey, "mainnet")
 }
 
 func (c *BalanceCollector) Collect(ch chan<- prometheus.Metric) {
@@ -49,7 +49,6 @@ func (c *BalanceCollector) Collect(ch chan<- prometheus.Metric) {
 	if err != nil {
 		klog.V(2).Infof("balance response: %v", err)
 	}
-
 	var keys AccountBalancePubkey
 	// we unmarshal our jsonData which contains our
 	// jsonFile's content into type which we defined above
@@ -60,19 +59,21 @@ func (c *BalanceCollector) Collect(ch chan<- prometheus.Metric) {
 	ctx, cancel := context.WithTimeout(context.Background(), HttpTimeout)
 	defer cancel()
 
-	response, _ := c.RpcClient.GetVoteAccounts(ctx, rpc.CommitmentRecent)
+	response, err := c.RpcClient.GetVoteAccounts(ctx, rpc.CommitmentRecent)
 
-	for _, account := range append(response.Result.Current, response.Result.Delinquent...) {
+	if err != nil {
+		for _, account := range append(response.Result.Current, response.Result.Delinquent...) {
 
-		ctx, cancel := context.WithTimeout(context.Background(), HttpTimeout)
-		defer cancel()
+			ctx, cancel := context.WithTimeout(context.Background(), HttpTimeout)
+			defer cancel()
 
-		balance, err := c.RpcClient.GetBalance(ctx, account.VotePubkey)
-		if err != nil {
-			ch <- prometheus.MustNewConstMetric(c.contextSlot, prometheus.GaugeValue, float64(-1), account.VotePubkey)
-			ch <- prometheus.MustNewConstMetric(c.accountBalance, prometheus.GaugeValue, float64(-1), account.VotePubkey)
-		} else {
-			c.mustEmitBalanceMetrics(ch, balance, account.VotePubkey)
+			balance, err := c.RpcClient.GetBalance(ctx, account.VotePubkey)
+			if err != nil {
+				ch <- prometheus.MustNewConstMetric(c.contextSlot, prometheus.GaugeValue, float64(-1), account.VotePubkey, "mainnet")
+				ch <- prometheus.MustNewConstMetric(c.accountBalance, prometheus.GaugeValue, float64(-1), account.VotePubkey, "mainnet")
+			} else {
+				c.mustEmitBalanceMetrics(ch, balance, account.VotePubkey)
+			}
 		}
 	}
 }

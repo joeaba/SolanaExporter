@@ -43,63 +43,63 @@ func NewTokenAccountsByOwnerCollector(rpcAddr string) *TokenAccountsByOwnerColle
 		contextSlot: prometheus.NewDesc(
 			"solana_token_accounts_by_owner_context_slot",
 			"Token Accounts By Owner - Context Slot",
-			[]string{"owner_pubkey", "mint_pubkey", "index"}, nil),
+			[]string{"owner_pubkey", "mint_pubkey", "index", "instance"}, nil),
 		dataProgram: prometheus.NewDesc(
 			"solana_token_accounts_by_owner_program",
 			"Token Accounts By Owner - Program",
-			[]string{"program", "owner_pubkey", "mint_pubkey", "index"}, nil),
+			[]string{"program", "owner_pubkey", "mint_pubkey", "index", "instance"}, nil),
 		accountType: prometheus.NewDesc(
 			"solana_token_accounts_by_owner_account_type",
 			"Token Accounts By Owner - Account Type",
-			[]string{"type", "owner_pubkey", "mint_pubkey", "index"}, nil),
+			[]string{"type", "owner_pubkey", "mint_pubkey", "index", "instance"}, nil),
 		tokenAmount: prometheus.NewDesc(
 			"solana_token_accounts_by_owner_token_amount",
 			"Token Accounts By Owner - Token Amount",
-			[]string{"amount", "owner_pubkey", "mint_pubkey", "index"}, nil),
+			[]string{"amount", "owner_pubkey", "mint_pubkey", "index", "instance"}, nil),
 		tokenAmountDecimals: prometheus.NewDesc(
 			"solana_token_accounts_by_owner_token_amount_decimals",
 			"Token Accounts By Owner - Token Amount Decimals",
-			[]string{"owner_pubkey", "mint_pubkey", "index"}, nil),
+			[]string{"owner_pubkey", "mint_pubkey", "index", "instance"}, nil),
 		tokenUiAmount: prometheus.NewDesc(
 			"solana_token_accounts_by_owner_token_ui_amount",
 			"Token Accounts By Owner - Token UI Amount",
-			[]string{"owner_pubkey", "mint_pubkey", "index"}, nil),
+			[]string{"owner_pubkey", "mint_pubkey", "index", "instance"}, nil),
 		tokenAmountString: prometheus.NewDesc(
 			"solana_token_accounts_by_owner_token_amount_string",
 			"Token Accounts By Owner - Token Amount String",
-			[]string{"amount", "owner_pubkey", "mint_pubkey", "index"}, nil),
+			[]string{"amount", "owner_pubkey", "mint_pubkey", "index", "instance"}, nil),
 		isInitialized: prometheus.NewDesc(
 			"solana_token_accounts_by_owner_is_initialized",
 			"Token Accounts By Owner - Is Initialized",
-			[]string{"isInitialized", "owner_pubkey", "mint_pubkey", "index"}, nil),
+			[]string{"isInitialized", "owner_pubkey", "mint_pubkey", "index", "instance"}, nil),
 		isNative: prometheus.NewDesc(
 			"solana_token_accounts_by_owner_is_native",
 			"Token Accounts By Owner - Is Native",
-			[]string{"isNative", "owner_pubkey", "mint_pubkey", "index"}, nil),
+			[]string{"isNative", "owner_pubkey", "mint_pubkey", "index", "instance"}, nil),
 		mintInfo: prometheus.NewDesc(
 			"solana_token_accounts_by_owner_mint",
 			"Token Accounts By Owner - Mint",
-			[]string{"mint", "owner_pubkey", "mint_pubkey", "index"}, nil),
+			[]string{"mint", "owner_pubkey", "mint_pubkey", "index", "instance"}, nil),
 		ownerInfo: prometheus.NewDesc(
 			"solana_token_accounts_by_owner_info_owner",
 			"Token Accounts By Owner - Owner Info",
-			[]string{"owner", "owner_pubkey", "mint_pubkey", "index"}, nil),
+			[]string{"owner", "owner_pubkey", "mint_pubkey", "index", "instance"}, nil),
 		executableProgram: prometheus.NewDesc(
 			"solana_token_accounts_by_owner_executable",
 			"Boolean indicating if the account contains a program (and is strictly read-only)",
-			[]string{"executable", "owner_pubkey", "mint_pubkey", "index"}, nil),
+			[]string{"executable", "owner_pubkey", "mint_pubkey", "index", "instance"}, nil),
 		accountLamports: prometheus.NewDesc(
 			"solana_token_accounts_by_owner_lamports",
 			"Number of lamports assigned to this account, as a u64",
-			[]string{"owner_pubkey", "mint_pubkey", "index"}, nil),
+			[]string{"owner_pubkey", "mint_pubkey", "index", "instance"}, nil),
 		accountOwner: prometheus.NewDesc(
 			"solana_token_accounts_by_owner_account_owner",
 			"Base-58 encoded Pubkey of the program this account has been assigned to",
-			[]string{"owner", "owner_pubkey", "mint_pubkey", "index"}, nil),
+			[]string{"owner", "owner_pubkey", "mint_pubkey", "index", "instance"}, nil),
 		accountRentEpoch: prometheus.NewDesc(
 			"solana_token_accounts_by_owner_rent_epoch",
 			"The epoch at which this account will next owe rent, as u64",
-			[]string{"owner_pubkey", "mint_pubkey", "index"}, nil),
+			[]string{"owner_pubkey", "mint_pubkey", "index", "instance"}, nil),
 	}
 }
 
@@ -107,24 +107,24 @@ func (c *TokenAccountsByOwnerCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (c *TokenAccountsByOwnerCollector) mustEmitTokenAccountsByOwnerMetrics(ch chan<- prometheus.Metric, response *rpc.TokenAccountsByOwnerInfo, pubkey string, mint string) {
-	ch <- prometheus.MustNewConstMetric(c.contextSlot, prometheus.GaugeValue, float64(response.Context.Slot), pubkey, mint, "")
+	ch <- prometheus.MustNewConstMetric(c.contextSlot, prometheus.GaugeValue, float64(response.Context.Slot), pubkey, mint, "", "mainnet")
 
 	for accountIndex, account := range response.Value {
 		accountIndex := strconv.Itoa(accountIndex)
-		ch <- prometheus.MustNewConstMetric(c.dataProgram, prometheus.GaugeValue, 0, account.Account.Data.Program, pubkey, mint, accountIndex)
-		ch <- prometheus.MustNewConstMetric(c.accountType, prometheus.GaugeValue, 0, account.Account.Data.Parsed.AccountType, pubkey, mint, accountIndex)
-		ch <- prometheus.MustNewConstMetric(c.tokenAmount, prometheus.GaugeValue, 0, account.Account.Data.Parsed.Info.TokenAmount.Amount, pubkey, mint, accountIndex)
-		ch <- prometheus.MustNewConstMetric(c.tokenAmountDecimals, prometheus.GaugeValue, float64(account.Account.Data.Parsed.Info.TokenAmount.Decimals), pubkey, mint, accountIndex)
-		ch <- prometheus.MustNewConstMetric(c.tokenUiAmount, prometheus.GaugeValue, float64(account.Account.Data.Parsed.Info.TokenAmount.UiAmount), pubkey, mint, accountIndex)
-		ch <- prometheus.MustNewConstMetric(c.tokenAmountString, prometheus.GaugeValue, 0, account.Account.Data.Parsed.Info.TokenAmount.UiAmountString, pubkey, mint, accountIndex)
-		ch <- prometheus.MustNewConstMetric(c.isInitialized, prometheus.GaugeValue, 0, account.Account.Data.Parsed.Info.IsInitialized, pubkey, mint, accountIndex)
-		ch <- prometheus.MustNewConstMetric(c.isNative, prometheus.GaugeValue, 0, strconv.FormatBool(account.Account.Data.Parsed.Info.IsNative), pubkey, mint, accountIndex)
-		ch <- prometheus.MustNewConstMetric(c.mintInfo, prometheus.GaugeValue, 0, account.Account.Data.Parsed.Info.Mint, pubkey, mint, accountIndex)
-		ch <- prometheus.MustNewConstMetric(c.ownerInfo, prometheus.GaugeValue, 0, account.Account.Data.Parsed.Info.Owner, pubkey, mint, accountIndex)
-		ch <- prometheus.MustNewConstMetric(c.executableProgram, prometheus.GaugeValue, 0, strconv.FormatBool(account.Account.Executable), pubkey, mint, accountIndex)
-		ch <- prometheus.MustNewConstMetric(c.accountLamports, prometheus.GaugeValue, float64(account.Account.Lamports), pubkey, mint, accountIndex)
-		ch <- prometheus.MustNewConstMetric(c.accountOwner, prometheus.GaugeValue, 0, account.Account.Owner, pubkey, mint, accountIndex)
-		ch <- prometheus.MustNewConstMetric(c.accountRentEpoch, prometheus.GaugeValue, float64(account.Account.RentEpoch), pubkey, mint, accountIndex)
+		ch <- prometheus.MustNewConstMetric(c.dataProgram, prometheus.GaugeValue, 0, account.Account.Data.Program, pubkey, mint, accountIndex, "mainnet")
+		ch <- prometheus.MustNewConstMetric(c.accountType, prometheus.GaugeValue, 0, account.Account.Data.Parsed.AccountType, pubkey, mint, accountIndex, "mainnet")
+		ch <- prometheus.MustNewConstMetric(c.tokenAmount, prometheus.GaugeValue, 0, account.Account.Data.Parsed.Info.TokenAmount.Amount, pubkey, mint, accountIndex, "mainnet")
+		ch <- prometheus.MustNewConstMetric(c.tokenAmountDecimals, prometheus.GaugeValue, float64(account.Account.Data.Parsed.Info.TokenAmount.Decimals), pubkey, mint, accountIndex, "mainnet")
+		ch <- prometheus.MustNewConstMetric(c.tokenUiAmount, prometheus.GaugeValue, float64(account.Account.Data.Parsed.Info.TokenAmount.UiAmount), pubkey, mint, accountIndex, "mainnet")
+		ch <- prometheus.MustNewConstMetric(c.tokenAmountString, prometheus.GaugeValue, 0, account.Account.Data.Parsed.Info.TokenAmount.UiAmountString, pubkey, mint, accountIndex, "mainnet")
+		ch <- prometheus.MustNewConstMetric(c.isInitialized, prometheus.GaugeValue, 0, account.Account.Data.Parsed.Info.IsInitialized, pubkey, mint, accountIndex, "mainnet")
+		ch <- prometheus.MustNewConstMetric(c.isNative, prometheus.GaugeValue, 0, strconv.FormatBool(account.Account.Data.Parsed.Info.IsNative), pubkey, mint, accountIndex, "mainnet")
+		ch <- prometheus.MustNewConstMetric(c.mintInfo, prometheus.GaugeValue, 0, account.Account.Data.Parsed.Info.Mint, pubkey, mint, accountIndex, "mainnet")
+		ch <- prometheus.MustNewConstMetric(c.ownerInfo, prometheus.GaugeValue, 0, account.Account.Data.Parsed.Info.Owner, pubkey, mint, accountIndex, "mainnet")
+		ch <- prometheus.MustNewConstMetric(c.executableProgram, prometheus.GaugeValue, 0, strconv.FormatBool(account.Account.Executable), pubkey, mint, accountIndex, "mainnet")
+		ch <- prometheus.MustNewConstMetric(c.accountLamports, prometheus.GaugeValue, float64(account.Account.Lamports), pubkey, mint, accountIndex, "mainnet")
+		ch <- prometheus.MustNewConstMetric(c.accountOwner, prometheus.GaugeValue, 0, account.Account.Owner, pubkey, mint, accountIndex, "mainnet")
+		ch <- prometheus.MustNewConstMetric(c.accountRentEpoch, prometheus.GaugeValue, float64(account.Account.RentEpoch), pubkey, mint, accountIndex, "mainnet")
 	}
 }
 
@@ -149,21 +149,21 @@ func (c *TokenAccountsByOwnerCollector) Collect(ch chan<- prometheus.Metric) {
 
 		accounts, err := c.RpcClient.GetTokenAccountsByOwner(ctx, ownerPubkey, mintPubkey)
 		if err != nil {
-			ch <- prometheus.MustNewConstMetric(c.contextSlot, prometheus.GaugeValue, float64(-1), ownerPubkey, mintPubkey, "")
-			ch <- prometheus.MustNewConstMetric(c.dataProgram, prometheus.GaugeValue, 0, err.Error(), ownerPubkey, mintPubkey, "")
-			ch <- prometheus.MustNewConstMetric(c.accountType, prometheus.GaugeValue, 0, err.Error(), ownerPubkey, mintPubkey, "")
-			ch <- prometheus.MustNewConstMetric(c.tokenAmount, prometheus.GaugeValue, 0, err.Error(), ownerPubkey, mintPubkey, "")
-			ch <- prometheus.MustNewConstMetric(c.tokenAmountDecimals, prometheus.GaugeValue, float64(-1), ownerPubkey, mintPubkey, "")
-			ch <- prometheus.MustNewConstMetric(c.tokenUiAmount, prometheus.GaugeValue, float64(-1), ownerPubkey, mintPubkey, "")
-			ch <- prometheus.MustNewConstMetric(c.tokenAmountString, prometheus.GaugeValue, 0, err.Error(), ownerPubkey, mintPubkey, "")
-			ch <- prometheus.MustNewConstMetric(c.isInitialized, prometheus.GaugeValue, 0, err.Error(), ownerPubkey, mintPubkey, "")
-			ch <- prometheus.MustNewConstMetric(c.isNative, prometheus.GaugeValue, 0, err.Error(), ownerPubkey, mintPubkey, "")
-			ch <- prometheus.MustNewConstMetric(c.mintInfo, prometheus.GaugeValue, 0, err.Error(), ownerPubkey, mintPubkey, "")
-			ch <- prometheus.MustNewConstMetric(c.ownerInfo, prometheus.GaugeValue, 0, err.Error(), ownerPubkey, mintPubkey, "")
-			ch <- prometheus.MustNewConstMetric(c.executableProgram, prometheus.GaugeValue, 0, err.Error(), ownerPubkey, mintPubkey, "")
-			ch <- prometheus.MustNewConstMetric(c.accountLamports, prometheus.GaugeValue, float64(-1), ownerPubkey, mintPubkey, "")
-			ch <- prometheus.MustNewConstMetric(c.accountOwner, prometheus.GaugeValue, 0, err.Error(), ownerPubkey, mintPubkey, "")
-			ch <- prometheus.MustNewConstMetric(c.accountRentEpoch, prometheus.GaugeValue, float64(-1), ownerPubkey, mintPubkey, "")
+			ch <- prometheus.MustNewConstMetric(c.contextSlot, prometheus.GaugeValue, float64(-1), ownerPubkey, mintPubkey, "", "mainnet")
+			ch <- prometheus.MustNewConstMetric(c.dataProgram, prometheus.GaugeValue, 0, err.Error(), ownerPubkey, mintPubkey, "", "mainnet")
+			ch <- prometheus.MustNewConstMetric(c.accountType, prometheus.GaugeValue, 0, err.Error(), ownerPubkey, mintPubkey, "", "mainnet")
+			ch <- prometheus.MustNewConstMetric(c.tokenAmount, prometheus.GaugeValue, 0, err.Error(), ownerPubkey, mintPubkey, "", "mainnet")
+			ch <- prometheus.MustNewConstMetric(c.tokenAmountDecimals, prometheus.GaugeValue, float64(-1), ownerPubkey, mintPubkey, "", "mainnet")
+			ch <- prometheus.MustNewConstMetric(c.tokenUiAmount, prometheus.GaugeValue, float64(-1), ownerPubkey, mintPubkey, "", "mainnet")
+			ch <- prometheus.MustNewConstMetric(c.tokenAmountString, prometheus.GaugeValue, 0, err.Error(), ownerPubkey, mintPubkey, "", "mainnet")
+			ch <- prometheus.MustNewConstMetric(c.isInitialized, prometheus.GaugeValue, 0, err.Error(), ownerPubkey, mintPubkey, "", "mainnet")
+			ch <- prometheus.MustNewConstMetric(c.isNative, prometheus.GaugeValue, 0, err.Error(), ownerPubkey, mintPubkey, "", "mainnet")
+			ch <- prometheus.MustNewConstMetric(c.mintInfo, prometheus.GaugeValue, 0, err.Error(), ownerPubkey, mintPubkey, "", "mainnet")
+			ch <- prometheus.MustNewConstMetric(c.ownerInfo, prometheus.GaugeValue, 0, err.Error(), ownerPubkey, mintPubkey, "", "mainnet")
+			ch <- prometheus.MustNewConstMetric(c.executableProgram, prometheus.GaugeValue, 0, err.Error(), ownerPubkey, mintPubkey, "", "mainnet")
+			ch <- prometheus.MustNewConstMetric(c.accountLamports, prometheus.GaugeValue, float64(-1), ownerPubkey, mintPubkey, "", "mainnet")
+			ch <- prometheus.MustNewConstMetric(c.accountOwner, prometheus.GaugeValue, 0, err.Error(), ownerPubkey, mintPubkey, "", "mainnet")
+			ch <- prometheus.MustNewConstMetric(c.accountRentEpoch, prometheus.GaugeValue, float64(-1), ownerPubkey, mintPubkey, "", "mainnet")
 		} else {
 			c.mustEmitTokenAccountsByOwnerMetrics(ch, accounts, ownerPubkey, mintPubkey)
 		}

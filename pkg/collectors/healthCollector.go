@@ -17,6 +17,7 @@ type NodeIP struct {
 	NodeInfo []struct {
 		Nodename string `json:"nodename"`
 		IP       string `json:"ip"`
+		Job 	 string `json:"job"`
 	} `json:"node_ip"`
 }
 
@@ -33,15 +34,15 @@ func NewHealthCollector(rpcAddr string) *HealthCollector {
 		nodeHealth: prometheus.NewDesc(
 			"solana_node_health",
 			"The current health of the node",
-			[]string{"status", "ip", "nodename"}, nil),
+			[]string{"status", "ip", "nodename", "job", "instance"}, nil),
 	}
 }
 
 func (c *HealthCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
-func (c *HealthCollector) mustEmitHealthMetrics(ch chan<- prometheus.Metric, status string, IP string, Nodename string) {
-	ch <- prometheus.MustNewConstMetric(c.nodeHealth, prometheus.GaugeValue, 0, status, IP, Nodename)
+func (c *HealthCollector) mustEmitHealthMetrics(ch chan<- prometheus.Metric, status string, IP string, Nodename string, Job string) {
+	ch <- prometheus.MustNewConstMetric(c.nodeHealth, prometheus.GaugeValue, 0, status, IP, Nodename, Job, "mainnet")
 }
 
 func (c *HealthCollector) Collect(ch chan<- prometheus.Metric) {
@@ -62,11 +63,12 @@ func (c *HealthCollector) Collect(ch chan<- prometheus.Metric) {
 
 		IP := NodeInfo.IP
 		Nodename := NodeInfo.Nodename
+		Job := NodeInfo.Job
 
 		match, err := regexp.MatchString(`^[^a-z]`, IP)
 
 		if err != nil {
-			c.mustEmitHealthMetrics(ch, err.Error(), IP, Nodename)
+			c.mustEmitHealthMetrics(ch, err.Error(), IP, Nodename, Job)
 		}
 
 		IP = "http://" + IP
@@ -81,12 +83,13 @@ func (c *HealthCollector) Collect(ch chan<- prometheus.Metric) {
 		status, err := c.RpcClient.GetHealth(ctx, IP)
 		if err != nil {
 			if strings.Contains(err.Error(), "deadline exceeded") {
-				c.mustEmitHealthMetrics(ch, "Node is unhealthy", IP, Nodename)
+				c.mustEmitHealthMetrics(ch, "Node is unhealthy", IP, Nodename, Job)
 			} else {
-				c.mustEmitHealthMetrics(ch, err.Error(), IP, Nodename)
+				c.mustEmitHealthMetrics(ch, err.Error(), IP, Nodename, Job)
 			}
 		} else {
-			c.mustEmitHealthMetrics(ch, status, IP, Nodename)
+			c.mustEmitHealthMetrics(ch, status, IP, Nodename, Job)
 		}
 	}
 }
+

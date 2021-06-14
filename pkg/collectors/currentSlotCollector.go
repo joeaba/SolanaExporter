@@ -24,15 +24,15 @@ func NewCurrentSlotCollector(rpcAddr string) *CurrentSlotCollector {
 		currentSlot: prometheus.NewDesc(
 			"solana_current_slot",
 			"The current slot the node is processing",
-			[]string{"ip", "nodename"}, nil),
+			[]string{"ip", "nodename", "job", "instance"}, nil),
 	}
 }
 
 func (c *CurrentSlotCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
-func (c *CurrentSlotCollector) mustEmitCurrentSlotMetrics(ch chan<- prometheus.Metric, currentSlot int64, IP string, Nodename string) {
-	ch <- prometheus.MustNewConstMetric(c.currentSlot, prometheus.GaugeValue, float64(currentSlot), IP, Nodename)
+func (c *CurrentSlotCollector) mustEmitCurrentSlotMetrics(ch chan<- prometheus.Metric, currentSlot int64, IP string, Nodename string, job string) {
+	ch <- prometheus.MustNewConstMetric(c.currentSlot, prometheus.GaugeValue, float64(currentSlot), IP, Nodename, job, "mainnet")
 }
 
 func (c *CurrentSlotCollector) Collect(ch chan<- prometheus.Metric) {
@@ -53,11 +53,12 @@ func (c *CurrentSlotCollector) Collect(ch chan<- prometheus.Metric) {
 
 		IP := NodeInfo.IP
 		Nodename := NodeInfo.Nodename
+		Job := NodeInfo.Job
 
 		match, err := regexp.MatchString(`^[^a-z]`, IP)
 
 		if err != nil {
-			c.mustEmitCurrentSlotMetrics(ch, -1, IP, Nodename)
+			c.mustEmitCurrentSlotMetrics(ch, -1, IP, Nodename, Job)
 		}
 
 		IP = "http://" + IP
@@ -71,9 +72,10 @@ func (c *CurrentSlotCollector) Collect(ch chan<- prometheus.Metric) {
 
 		slot, err := c.RpcClient.GetSlot(ctx, IP)
 		if err != nil {
-			c.mustEmitCurrentSlotMetrics(ch, -1, IP, Nodename)
+			c.mustEmitCurrentSlotMetrics(ch, -1, IP, Nodename, Job)
 		} else {
-			c.mustEmitCurrentSlotMetrics(ch, slot, IP, Nodename)
+			c.mustEmitCurrentSlotMetrics(ch, slot, IP, Nodename, Job)
 		}
 	}
 }
+

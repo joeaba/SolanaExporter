@@ -1,11 +1,32 @@
 {
     "node_ip": [
-        "x5.x9x.x3.x0x",
-        "xexnxt.xoxaxa.xox",
-        "x4.x2.x7.x6",
-        "x5.x8x.x3x.x2",
-        "x5.x3x.x9x.x"
+        {
+            "nodename": "xaxixaxox-xs-xextx-c",
+            "ip": "x0x.x9x.x0x.x4x",
+            "job": "xaxnxex"
+        },
+        {
+            "nodename": "xaxixaxox-xs-xaxtx-x",
+            "ip": "x5.x3x.x1x.x4x",
+            "job": "xaxnxex"
+        },
+        {
+            "nodename": "xaxixaxox-xuxoxe-xextx-x",
+            "ip": "x4.x1.x3x.x7x",
+            "job": "xaxnxex"
+        },
+        {
+            "nodename": " xaxixaxox-xsxa-xaxtx-x",
+            "ip": "x4.x6.x3x.x0x",
+            "job": "xaxnxex"
+        },
+        {
+            "nodename": "xexa-xaxixaxox-xs-xextx-x",
+            "ip": "x4.x2.x4x.x7",
+            "job": "xaxnxex"
+        }
     ],
+
     "stake_account_pubkey": [
         "xdxUxuxjxrxdxqxmx7xGxKxFxixixHxGx3xNxoxHxRxU",
         "xLxjxwx3xSxSxFx4xex3xHxax1xJxZxwxSxnxKxKxZxh"

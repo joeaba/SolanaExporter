@@ -30,15 +30,15 @@ func NewStakeActivationCollector(rpcAddr string) *StakeActivationCollector {
 		accountState: prometheus.NewDesc(
 			"solana_stake_account_activation_stake",
 			"The stake account's activation state",
-			[]string{"state", "pubkey"}, nil),
+			[]string{"state", "pubkey", "instance"}, nil),
 		stakeActive: prometheus.NewDesc(
 			"solana_stake_active",
 			"Stake active during the epoch",
-			[]string{"pubkey"}, nil),
+			[]string{"pubkey", "instance"}, nil),
 		stakeInactive: prometheus.NewDesc(
 			"solana_stake_inactive",
 			"Stake inactive during the epoch",
-			[]string{"pubkey"}, nil),
+			[]string{"pubkey", "instance"}, nil),
 	}
 }
 
@@ -46,9 +46,9 @@ func (c *StakeActivationCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (c *StakeActivationCollector) mustEmitStakeActivationMetrics(ch chan<- prometheus.Metric, response *rpc.StakeActivationInfo, pubkey string) {
-	ch <- prometheus.MustNewConstMetric(c.accountState, prometheus.GaugeValue, 0, response.State, pubkey)
-	ch <- prometheus.MustNewConstMetric(c.stakeActive, prometheus.GaugeValue, float64(response.Active), pubkey)
-	ch <- prometheus.MustNewConstMetric(c.stakeInactive, prometheus.GaugeValue, float64(response.Inactive), pubkey)
+	ch <- prometheus.MustNewConstMetric(c.accountState, prometheus.GaugeValue, 0, response.State, pubkey, "mainnet")
+	ch <- prometheus.MustNewConstMetric(c.stakeActive, prometheus.GaugeValue, float64(response.Active), pubkey, "mainnet")
+	ch <- prometheus.MustNewConstMetric(c.stakeInactive, prometheus.GaugeValue, float64(response.Inactive), pubkey, "mainnet")
 }
 
 func (c *StakeActivationCollector) Collect(ch chan<- prometheus.Metric) {
@@ -70,9 +70,9 @@ func (c *StakeActivationCollector) Collect(ch chan<- prometheus.Metric) {
 
 		info, err := c.RpcClient.GetStakeActivation(ctx, pubkey)
 		if err != nil {
-			ch <- prometheus.MustNewConstMetric(c.accountState, prometheus.GaugeValue, 0, err.Error(), pubkey)
-			ch <- prometheus.MustNewConstMetric(c.stakeActive, prometheus.GaugeValue, float64(-1), pubkey)
-			ch <- prometheus.MustNewConstMetric(c.stakeInactive, prometheus.GaugeValue, float64(-1), pubkey)
+			ch <- prometheus.MustNewConstMetric(c.accountState, prometheus.GaugeValue, 0, err.Error(), pubkey, "mainnet")
+			ch <- prometheus.MustNewConstMetric(c.stakeActive, prometheus.GaugeValue, float64(-1), pubkey, "mainnet")
+			ch <- prometheus.MustNewConstMetric(c.stakeInactive, prometheus.GaugeValue, float64(-1), pubkey, "mainnet")
 		} else {
 			c.mustEmitStakeActivationMetrics(ch, info, pubkey)
 		}

@@ -31,19 +31,19 @@ func NewTokenAccountBalanceCollector(rpcAddr string) *TokenAccountBalanceCollect
 		contextSlot: prometheus.NewDesc(
 			"solana_token_account_balance_context_slot",
 			"Token Account Balance Context Slot",
-			[]string{"pubkey"}, nil),
+			[]string{"pubkey", "instance"}, nil),
 		balanceAmount: prometheus.NewDesc(
 			"solana_token_account_balance_amount",
 			"The raw balance without decimals, a string representation of u64",
-			[]string{"amount", "pubkey"}, nil),
+			[]string{"amount", "pubkey", "instance"}, nil),
 		balanceDecimals: prometheus.NewDesc(
 			"solana_token_account_balance_decimals",
 			"Number of base 10 digits to the right of the decimal place",
-			[]string{"pubkey"}, nil),
+			[]string{"pubkey", "instance"}, nil),
 		balanceUiAmountString: prometheus.NewDesc(
 			"solana_token_account_balance_amount_string",
 			"The balance as a string, using mint-prescribed decimals",
-			[]string{"amountString", "pubkey"}, nil),
+			[]string{"amountString", "pubkey", "instance"}, nil),
 	}
 }
 
@@ -51,10 +51,10 @@ func (c *TokenAccountBalanceCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (c *TokenAccountBalanceCollector) mustEmitTokenAccountBalanceMetrics(ch chan<- prometheus.Metric, response *rpc.TokenAccountBalanceInfo, pubkey string) {
-	ch <- prometheus.MustNewConstMetric(c.contextSlot, prometheus.GaugeValue, float64(response.Context.Slot), pubkey)
-	ch <- prometheus.MustNewConstMetric(c.balanceAmount, prometheus.GaugeValue, 0, response.Value.Amount, pubkey)
-	ch <- prometheus.MustNewConstMetric(c.balanceDecimals, prometheus.GaugeValue, float64(response.Value.Decimals), pubkey)
-	ch <- prometheus.MustNewConstMetric(c.balanceUiAmountString, prometheus.GaugeValue, 0, response.Value.UiAmountString, pubkey)
+	ch <- prometheus.MustNewConstMetric(c.contextSlot, prometheus.GaugeValue, float64(response.Context.Slot), pubkey, "mainnet")
+	ch <- prometheus.MustNewConstMetric(c.balanceAmount, prometheus.GaugeValue, 0, response.Value.Amount, pubkey, "mainnet")
+	ch <- prometheus.MustNewConstMetric(c.balanceDecimals, prometheus.GaugeValue, float64(response.Value.Decimals), pubkey, "mainnet")
+	ch <- prometheus.MustNewConstMetric(c.balanceUiAmountString, prometheus.GaugeValue, 0, response.Value.UiAmountString, pubkey, "mainnet")
 }
 
 func (c *TokenAccountBalanceCollector) Collect(ch chan<- prometheus.Metric) {
@@ -76,10 +76,10 @@ func (c *TokenAccountBalanceCollector) Collect(ch chan<- prometheus.Metric) {
 
 		balance, err := c.RpcClient.GetTokenAccountBalance(ctx, pubkey)
 		if err != nil {
-			ch <- prometheus.MustNewConstMetric(c.contextSlot, prometheus.GaugeValue, float64(-1), pubkey)
-			ch <- prometheus.MustNewConstMetric(c.balanceAmount, prometheus.GaugeValue, 0, err.Error(), pubkey)
-			ch <- prometheus.MustNewConstMetric(c.balanceDecimals, prometheus.GaugeValue, float64(-1), pubkey)
-			ch <- prometheus.MustNewConstMetric(c.balanceUiAmountString, prometheus.GaugeValue, 0, err.Error(), pubkey)
+			ch <- prometheus.MustNewConstMetric(c.contextSlot, prometheus.GaugeValue, float64(-1), pubkey, "mainnet")
+			ch <- prometheus.MustNewConstMetric(c.balanceAmount, prometheus.GaugeValue, 0, err.Error(), pubkey, "mainnet")
+			ch <- prometheus.MustNewConstMetric(c.balanceDecimals, prometheus.GaugeValue, float64(-1), pubkey, "mainnet")
+			ch <- prometheus.MustNewConstMetric(c.balanceUiAmountString, prometheus.GaugeValue, 0, err.Error(), pubkey, "mainnet")
 		} else {
 			c.mustEmitTokenAccountBalanceMetrics(ch, balance, pubkey)
 		}

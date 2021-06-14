@@ -23,15 +23,15 @@ func NewVersionCollector(rpcAddr string) *VersionCollector {
 		solanaVersion: prometheus.NewDesc(
 			"solana_core_version",
 			"Software version of solana-core",
-			[]string{"solana_core", "ip", "nodename"}, nil),
+			[]string{"solana_core", "ip", "nodename", "job", "instance"}, nil),
 	}
 }
 
 func (c *VersionCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
-func (c *VersionCollector) mustEmitVersionMetrics(ch chan<- prometheus.Metric, version string, IP string, Nodename string) {
-	ch <- prometheus.MustNewConstMetric(c.solanaVersion, prometheus.GaugeValue, 0, version, IP, Nodename)
+func (c *VersionCollector) mustEmitVersionMetrics(ch chan<- prometheus.Metric, version string, IP string, Nodename string, job string) {
+	ch <- prometheus.MustNewConstMetric(c.solanaVersion, prometheus.GaugeValue, 0, version, IP, Nodename, job, "mainnet")
 }
 
 func (c *VersionCollector) Collect(ch chan<- prometheus.Metric) {
@@ -52,11 +52,12 @@ func (c *VersionCollector) Collect(ch chan<- prometheus.Metric) {
 
 		IP := NodeInfo.IP
 		Nodename := NodeInfo.Nodename
+		Job := NodeInfo.Job
 
 		match, err := regexp.MatchString(`^[^a-z]`, IP)
 
 		if err != nil {
-			c.mustEmitVersionMetrics(ch, err.Error(), IP, Nodename)
+			c.mustEmitVersionMetrics(ch, err.Error(), IP, Nodename, Job)
 		}
 
 		IP = "http://" + IP
@@ -70,9 +71,10 @@ func (c *VersionCollector) Collect(ch chan<- prometheus.Metric) {
 
 		version, err := c.RpcClient.GetVersion(ctx, IP)
 		if err != nil {
-			c.mustEmitVersionMetrics(ch, err.Error(), IP, Nodename)
+			c.mustEmitVersionMetrics(ch, err.Error(), IP, Nodename, Job)
 		} else {
-			c.mustEmitVersionMetrics(ch, *version, IP, Nodename)
+			c.mustEmitVersionMetrics(ch, *version, IP, Nodename, Job)
 		}
 	}
 }
+

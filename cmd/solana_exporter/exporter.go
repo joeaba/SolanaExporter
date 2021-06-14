@@ -17,7 +17,7 @@ const (
 )
 
 var (
-	rpcAddr = flag.String("rpcURI", "", "Solana RPC URI (including protocol and path)")
+	rpcAddr = flag.String("rpcURI", "http://localhost:8899", "Solana RPC URI (including protocol and path)")
 	addr    = flag.String("addr", ":8080", "Listen address")
 )
 
@@ -71,3 +71,4 @@ func main() {
 	klog.Infof("listening on %s", *addr)
 	klog.Fatal(http.ListenAndServe(*addr, nil))
 }
+
